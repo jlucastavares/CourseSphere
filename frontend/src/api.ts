@@ -89,10 +89,12 @@ async function setProfileInfoIfLoggedIn(
     const idToken = await user?.getIdToken()
 
     try {
-      const response = await fetch(`${API_URL}/users/info?id_token=${idToken}`, {
+      // O token vai somente no header Authorization, nunca na URL.
+      const response = await fetch(`${API_URL}/users/info`, {
         method: "GET",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
         }
       })
 
@@ -155,14 +157,14 @@ async function saveProfileChanges (majors: string[], minors: string[], courses: 
     year: year,
     college: college,
     courses: courses,
-    about: about,
-    id_token: idToken
+    about: about
   };
 
   fetch(`${API_URL}/users/info`, {
     method: "POST",
     headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`
     },
     body: JSON.stringify(data)
   })
@@ -185,7 +187,7 @@ async function saveProfileChanges (majors: string[], minors: string[], courses: 
 async function fetchCourseSphereResponse(query: string) {
   const user = auth.currentUser;
   const idToken = user ? await user.getIdToken() : undefined;
-  const data = { query, id_token: idToken };
+  const data = { query };
   const response = await fetch(`${API_URL}/users/query`, {
     method: "POST",
     headers: {
@@ -237,7 +239,6 @@ async function saveCourseSphereChat(chatId: string, messages: Message[]) {
       'Authorization': `Bearer ${idToken}`
     },
     body: JSON.stringify({
-      id_token: idToken,
       messages: messages.map(message => ({
         sender: message.sender,
         content: message.content,
@@ -265,10 +266,10 @@ async function updateCourseSphereChat(chatId: string, messageId: string, updated
   const response = await fetch(`${API_URL}/chats/${chatId}/messages/${messageId}`, {
     method: 'PUT',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
     },
     body: JSON.stringify({
-      id_token: idToken,
       content: updatedContent
     })
   });
