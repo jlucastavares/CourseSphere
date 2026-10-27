@@ -10,6 +10,10 @@ from flask_limiter.util import get_remote_address
 from query_manager import QueryManager
 from firebase import Firebase
 from main import hashFunction
+from validation import (
+    ValidationError, MAX_REQUEST_BYTES,
+    validate_user_info, validate_query, validate_chat_id, validate_messages,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,6 +22,8 @@ logging.basicConfig(
 logger = logging.getLogger("coursesphere")
 
 app = Flask(__name__)
+# Requisições com corpo maior que o limite são recusadas com 413.
+app.config["MAX_CONTENT_LENGTH"] = MAX_REQUEST_BYTES
 
 # CORS restrito: apenas as origens do frontend podem chamar a API pelo
 # navegador. A lista vem da variável CORS_ORIGINS (separada por vírgula);
@@ -90,6 +96,12 @@ EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 def handle_http_exception(e):
     # Erros HTTP conhecidos (404, 405, 415...) em JSON, sem página HTML.
     return error_response(e.name, e.code)
+
+
+@app.errorhandler(ValidationError)
+def handle_validation_error(e):
+    # Mensagens de ValidationError são escritas para o cliente (seguras).
+    return error_response(str(e), 400)
 
 
 @app.errorhandler(Exception)
@@ -167,23 +179,12 @@ def set_user_info():
     data = get_json_body()
     if data is None:
         return error_response("Invalid JSON body", 400)
+    # Apenas os campos conhecidos, com tipo e tamanho validados, são
+    # gravados (ValidationError -> 400).
+    user_info = validate_user_info(data)
     try:
         uid = g.uid
-        majors = data.get("majors")
-        minors = data.get("minors")
-        year = data.get("year")
-        college = data.get("college")
-        courses = data.get("courses")
-        about = data.get("about")
-        user_info = {
-            "majors": majors,
-            "minors": minors,
-            "courses": courses,
-            "college": college,
-            "year": year,
-            "about": about
-        }
-        Firebase.set_user_info(uid, user_info) 
+        Firebase.set_user_info(uid, user_info)
         return success_response({"message": "User info set successfully", "uid": uid}, 200)
     except Exception:
         logger.exception("Failed to set user info (uid=%s)", g.uid)
@@ -202,11 +203,9 @@ def get_user_info():
 @app.route("/users/query", methods=["POST"])
 @limiter.limit("20 per minute")
 def get_user_query():
+    body = get_json_body() or {}
+    query = validate_query(body.get("query"))
     try:
-        body = get_json_body() or {}
-        query = body.get("query")
-        if not isinstance(query, str) or not query.strip():
-            return error_response("Query is required", 400)
         # Autenticação opcional: se houver token, ele vem apenas do header.
         id_token = get_bearer_token()
         user_info = Firebase.try_get_user_info(id_token) if id_token else None
@@ -239,14 +238,13 @@ def list_chats():
 @app.route("/chats/<chat_id>/messages", methods=["POST"])
 @require_auth
 def save_chat(chat_id):
+    validate_chat_id(chat_id)
+    data = get_json_body()
+    if data is None:
+        return error_response("Invalid JSON body", 400)
+    messages = validate_messages(data.get('messages'))
     try:
         user_id = g.uid
-        data = get_json_body()
-        if data is None:
-            return error_response("Invalid JSON body", 400)
-        messages = data.get('messages', [])
-        if not isinstance(messages, list) or not all(isinstance(m, dict) for m in messages):
-            return error_response("'messages' must be a list of objects", 400)
         Firebase.save_chat(user_id, chat_id, messages)
         return jsonify({'message': 'Messages saved successfully'}), 200
     except Exception:
@@ -256,6 +254,7 @@ def save_chat(chat_id):
 @app.route("/chats/<chat_id>", methods=["DELETE"])
 @require_auth
 def delete_chat(chat_id):
+    validate_chat_id(chat_id)
     try:
         user_id = g.uid
         Firebase.delete_chat(user_id, chat_id)
