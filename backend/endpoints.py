@@ -5,6 +5,8 @@ from functools import wraps
 from flask import Flask, request, jsonify, g
 from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from query_manager import QueryManager
 from firebase import Firebase
 from main import hashFunction
@@ -17,6 +19,19 @@ logger = logging.getLogger("coursesphere")
 
 app = Flask(__name__)
 CORS(app)
+
+# Rate limiting por endereço IP. Limites padrão para todas as rotas e
+# limites mais rígidos nas rotas sensíveis (cadastro e consulta ao LLM).
+# Em produção com várias instâncias, use um storage compartilhado
+# (ex.: RATELIMIT_STORAGE_URI=redis://redis:6379) para que o limite
+# valha para o conjunto e não para cada instância separadamente.
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per minute"],
+    storage_uri=os.environ.get("RATELIMIT_STORAGE_URI", "memory://"),
+    headers_enabled=True,  # envia X-RateLimit-* e Retry-After ao cliente
+)
 
 # TODO: figure out the blueprint thing below
 #app.register_blueprint(courses_bp)
@@ -85,6 +100,7 @@ def require_auth(view):
     return wrapper
 
 @app.route("/users/create", methods=["POST"])
+@limiter.limit("5 per minute; 20 per hour")
 def create_user():
     data = get_json_body()
     if data is None:
@@ -145,6 +161,7 @@ def get_user_info():
         return error_response("Could not load user info", 500)
   
 @app.route("/users/query", methods=["POST"])
+@limiter.limit("20 per minute")
 def get_user_query():
     try:
         body = get_json_body() or {}

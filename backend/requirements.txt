@@ -4,3 +4,4 @@ flask-cors
 openai
 pandas
 numpy
+flask-limiter
