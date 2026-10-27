@@ -10,15 +10,15 @@ from flask_limiter.util import get_remote_address
 from query_manager import QueryManager
 from firebase import Firebase
 from main import hashFunction
+import observability
+from observability import record_auth_event
 from validation import (
     ValidationError, MAX_REQUEST_BYTES,
     validate_user_info, validate_query, validate_chat_id, validate_messages,
 )
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s %(message)s",
-)
+# Logs estruturados em JSON (uma linha por evento).
+observability.configure_logging()
 logger = logging.getLogger("coursesphere")
 
 app = Flask(__name__)
@@ -56,6 +56,9 @@ limiter = Limiter(
     storage_uri=os.environ.get("RATELIMIT_STORAGE_URI", "memory://"),
     headers_enabled=True,  # envia X-RateLimit-* e Retry-After ao cliente
 )
+
+# request_id, log de cada requisição, métricas e rotas /health e /metrics.
+observability.init_app(app, logger, limiter)
 
 # TODO: figure out the blueprint thing below
 #app.register_blueprint(courses_bp)
@@ -142,11 +145,14 @@ def require_auth(view):
     def wrapper(*args, **kwargs):
         id_token = get_bearer_token()
         if not id_token:
+            record_auth_event(logger, "token_validation", "missing_token", level=logging.WARNING)
             return error_response("Authentication required", 401)
         try:
             g.uid = Firebase.verify_id_token(id_token).get('uid')
         except Exception:
+            record_auth_event(logger, "token_validation", "invalid_token", level=logging.WARNING)
             return error_response("Invalid or expired token", 401)
+        observability.AUTH_EVENTS.labels(event="token_validation", result="success").inc()
         return view(*args, **kwargs)
     return wrapper
 
@@ -165,8 +171,11 @@ def create_user():
     if not isinstance(password, str) or len(password) < 6:
         return error_response("Password must have at least 6 characters", 400)
     try:
-        return success_response(Firebase.create_user(email, password), 200)
+        result = Firebase.create_user(email, password)
+        record_auth_event(logger, "signup", "success", uid=result.get("user_id"))
+        return success_response(result, 200)
     except Exception:
+        record_auth_event(logger, "signup", "failure", level=logging.WARNING)
         # A mensagem do Firebase revelaria se o e-mail já está cadastrado
         # (EMAIL_EXISTS), permitindo enumerar usuários. Resposta única para
         # qualquer falha; o motivo real vai apenas para o log.
@@ -181,7 +190,7 @@ def logout():
     # logout deixa de funcionar imediatamente.
     try:
         Firebase.revoke_sessions(g.uid)
-        logger.info("Sessions revoked (uid=%s)", g.uid)
+        record_auth_event(logger, "logout", "success", uid=g.uid)
         return success_response({"message": "Logged out"}, 200)
     except Exception:
         logger.exception("Failed to revoke sessions (uid=%s)", g.uid)
@@ -285,4 +294,9 @@ if __name__ == '__main__':
     debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
     host = os.environ.get("FLASK_RUN_HOST", "127.0.0.1")
     port = int(os.environ.get("FLASK_RUN_PORT", "5000"))
+    # Os logs de acesso do servidor de desenvolvimento estão desligados
+    # (observability.py), então o aviso de inicialização é registrado aqui.
+    observability.log_event(
+        logger, "server.start", url=f"http://{host}:{port}", debug=debug_mode
+    )
     app.run(host=host, port=port, debug=debug_mode)
