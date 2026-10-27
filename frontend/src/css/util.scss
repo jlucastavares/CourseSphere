@@ -1,0 +1,65 @@
+$extra-small: 0px;
+$small: 400px;
+$medium: 768px;
+$large: 992px;
+$extra-large: 1200px;
+
+@mixin xs {
+    @media (min-width: $extra-small) {@content}
+}
+
+@mixin sm {
+    @media (min-width: $small) {@content}
+}
+
+@mixin md {
+    @media (min-width: $medium) {@content}
+}
+
+@mixin lg {
+    @media (min-width: $large) {@content}
+}
+
+@mixin xl {
+    @media (min-width: $extra-large) {@content}
+}
+
+$soft-white: #f8f8f8;
+$primary-text: #333333;
+$secondary-text: #757575;
+$bright-red: #ff4081;
+$muted-blue: #5c6bc0;
+$soft-teal: #a3d5d3;
+
+@mixin shadow {
+    //box-shadow: 0px 0px 10px 0px rgba(0,0,0,1);
+    box-shadow: 0 5px 5px hsla(0, 0%, 0%, 0.25);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+@mixin shadow-2 {
+    //box-shadow: 0px 0px 10px 0px rgba(0,0,0,1);
+    box-shadow: -5px -5px 5px hsla(0, 0%, 0%, 0.25);
+    border-radius: 8px;
+    padding: 10px;
+}
+  
+
+@mixin shadow-no-padding {
+    box-shadow: 0 5px 15px hsla(0, 0%, 0%, 0.25);
+    border-radius: 8px;
+}
+
+@mixin shadow-no-shadow {
+    border-radius: 8px;
+    padding: 10px;
+}
+
+@mixin color-shadow {
+    @include shadow-no-padding;
+    border-radius: 10px; 
+    box-shadow:
+    0 0 10px 0px rgba(22, 127, 239, 0.5),   
+    0 0 15px 0px rgba(107, 241, 174, 0.7);   
+}

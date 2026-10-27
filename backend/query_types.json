@@ -1,0 +1,39 @@
+[   
+{
+    "query_type": "Unsupported",
+    "parameters": {}
+},
+  {
+      "query_type": "Info about course",
+      "parameters": {
+          "course_code": "string"
+      }
+
+  },
+  {
+      "query_type": "Course recommendation",
+      "parameters": {
+          "interests": "list of strings"
+      }
+  },
+  {
+      "query_type": "Info about major",
+      "parameters": {
+          "major": "string"
+      }
+
+  },
+  {
+      "query_type": "Info about minor",
+      "parameters": {
+          "minor": "string"
+      }
+
+  },
+  {
+    "query_type": "Info about professor",
+    "parameters": {
+        "professor_name": "string"
+    }
+  }
+]

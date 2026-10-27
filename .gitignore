@@ -1,0 +1,20 @@
+*config.json
+
+*.idea*
+*.vscode*
+
+*.db*
+
+.DS_Store
+
+credentials.json
+reddit_key.json
+__pycache__/
+node_modules/
+dist/
+
+# Ambiente virtual Python e variaveis de ambiente locais
+venv/
+.venv/
+.env
+*.pyc
