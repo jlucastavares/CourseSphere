@@ -1,0 +1,135 @@
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.13.18
+Run started:2026-10-27 19:02:21.514918+00:00
+
+Test results:
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: backend/blueprints/courses.py:30:29
+29	    """
+30	    course = execute_query(f"SELECT * FROM courses WHERE id = {course_id}").fetchall()
+31	    if course:
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: backend/blueprints/courses.py:47:10
+46	    course = execute_query(
+47	        f"SELECT description FROM course_descriptions WHERE id = {course_id}"
+48	    ).fetchall()
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: backend/blueprints/courses.py:64:10
+63	    courses = execute_query(
+64	        f"SELECT * FROM courses WHERE section_id = {section_id}"
+65	    ).fetchall()
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: backend/blueprints/courses.py:80:10
+79	    courses = execute_query(
+80	        f"SELECT * FROM courses WHERE semester = '{semester}'"
+81	    ).fetchall()
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: backend/blueprints/courses.py:96:10
+95	    courses = execute_query(
+96	        f"SELECT * FROM courses WHERE department = '{department}'"
+97	    ).fetchall()
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: backend/blueprints/courses.py:112:10
+111	    courses = execute_query(
+112	        f"SELECT * FROM courses WHERE instructor = '{instructor}'"
+113	    ).fetchall()
+
+--------------------------------------------------
+>> Issue: [B201:flask_debug_true] A Flask app appears to be run with debug=True, which exposes the Werkzeug debugger and allows the execution of arbitrary code.
+   Severity: High   Confidence: Medium
+   CWE: CWE-94 (https://cwe.mitre.org/data/definitions/94.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b201_flask_debug_true.html
+   Location: backend/endpoints.py:122:4
+121	if __name__ == '__main__':
+122	    app.run(debug=True)
+
+--------------------------------------------------
+>> Issue: [B311:blacklist] Standard pseudo-random generators are not suitable for security/cryptographic purposes.
+   Severity: Low   Confidence: High
+   CWE: CWE-330 (https://cwe.mitre.org/data/definitions/330.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b311-random
+   Location: backend/main.py:20:38
+19	def hashFunction(data) -> str:
+20	    x = h.sha256((str(data) + ''.join(rv.choices(s.ascii_letters + s.digits, k=rv.randint(5, 9)))).encode()).hexdigest()
+21	    w = str(sum(np.random.poisson(lam=i) for i in range(rv.randint(1, 5))))
+
+--------------------------------------------------
+>> Issue: [B311:blacklist] Standard pseudo-random generators are not suitable for security/cryptographic purposes.
+   Severity: Low   Confidence: High
+   CWE: CWE-330 (https://cwe.mitre.org/data/definitions/330.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b311-random
+   Location: backend/main.py:20:79
+19	def hashFunction(data) -> str:
+20	    x = h.sha256((str(data) + ''.join(rv.choices(s.ascii_letters + s.digits, k=rv.randint(5, 9)))).encode()).hexdigest()
+21	    w = str(sum(np.random.poisson(lam=i) for i in range(rv.randint(1, 5))))
+
+--------------------------------------------------
+>> Issue: [B311:blacklist] Standard pseudo-random generators are not suitable for security/cryptographic purposes.
+   Severity: Low   Confidence: High
+   CWE: CWE-330 (https://cwe.mitre.org/data/definitions/330.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b311-random
+   Location: backend/main.py:21:56
+20	    x = h.sha256((str(data) + ''.join(rv.choices(s.ascii_letters + s.digits, k=rv.randint(5, 9)))).encode()).hexdigest()
+21	    w = str(sum(np.random.poisson(lam=i) for i in range(rv.randint(1, 5))))
+22	    b = st.token_hex(16)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html
+   Location: backend/query_manager.py:44:8
+43	        """
+44	        assert (query is not None)
+45	        
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 492
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 4
+		Medium: 6
+		High: 1
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 6
+		Medium: 1
+		High: 4
+Files skipped (0):

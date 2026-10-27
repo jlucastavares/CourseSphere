@@ -1,0 +1,146 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+rootdir: backend
+plugins: platformdirs-4.13.0, anyio-4.15.1
+collecting ... collected 33 items
+
+tests/test_security.py::TestRegressao::test_salvar_e_carregar_perfil FAILED [  3%]
+tests/test_security.py::TestRegressao::test_salvar_listar_e_apagar_chat PASSED [  6%]
+tests/test_security.py::TestRegressao::test_consulta_anonima_e_autenticada PASSED [  9%]
+tests/test_security.py::TestRegressao::test_cadastro_valido PASSED       [ 12%]
+tests/test_security.py::TestControleDeAcesso::test_usuario_nao_le_perfil_de_outro FAILED [ 15%]
+tests/test_security.py::TestControleDeAcesso::test_usuario_nao_lista_chats_de_outro PASSED [ 18%]
+tests/test_security.py::TestControleDeAcesso::test_usuario_nao_apaga_chat_de_outro PASSED [ 21%]
+tests/test_security.py::TestModoDebug::test_debug_desligado_por_padrao FAILED [ 24%]
+tests/test_security.py::TestModoDebug::test_debug_so_liga_quando_pedido_explicitamente PASSED [ 27%]
+tests/test_security.py::TestModoDebug::test_console_do_werkzeug_indisponivel PASSED [ 30%]
+tests/test_security.py::TestMensagensDeErro::test_cadastro_nao_revela_email_existente FAILED [ 33%]
+tests/test_security.py::TestMensagensDeErro::test_corpo_nulo_nao_gera_erro_interno FAILED [ 36%]
+tests/test_security.py::TestMensagensDeErro::test_falha_interna_nao_vaza_detalhe FAILED [ 39%]
+tests/test_security.py::TestMensagensDeErro::test_token_invalido_nao_vaza_detalhe FAILED [ 42%]
+tests/test_security.py::TestMensagensDeErro::test_rota_inexistente_responde_json FAILED [ 45%]
+tests/test_security.py::TestTokenDeSessao::test_token_na_url_e_recusado FAILED [ 48%]
+tests/test_security.py::TestTokenDeSessao::test_token_no_corpo_e_recusado FAILED [ 51%]
+tests/test_security.py::TestTokenDeSessao::test_requisicao_sem_token_retorna_401 FAILED [ 54%]
+tests/test_security.py::TestTokenDeSessao::test_logout_revoga_o_token FAILED [ 57%]
+tests/test_security.py::TestTokenDeSessao::test_logout_nao_afeta_outro_usuario PASSED [ 60%]
+tests/test_security.py::TestRateLimiting::test_cadastro_bloqueado_apos_5_tentativas_por_minuto FAILED [ 63%]
+tests/test_security.py::TestRateLimiting::test_resposta_429_informa_tempo_de_espera FAILED [ 66%]
+tests/test_security.py::TestRateLimiting::test_consulta_bloqueada_apos_20_por_minuto FAILED [ 69%]
+tests/test_security.py::TestHeadersECors::test_headers_de_seguranca_presentes FAILED [ 72%]
+tests/test_security.py::TestHeadersECors::test_cors_recusa_origem_desconhecida FAILED [ 75%]
+tests/test_security.py::TestHeadersECors::test_cors_permite_o_frontend PASSED [ 78%]
+tests/test_security.py::TestValidacaoDeEntrada::test_ano_fora_da_lista_e_recusado PASSED [ 81%]
+tests/test_security.py::TestValidacaoDeEntrada::test_texto_muito_longo_e_recusado PASSED [ 84%]
+tests/test_security.py::TestValidacaoDeEntrada::test_campos_desconhecidos_sao_descartados FAILED [ 87%]
+tests/test_security.py::TestValidacaoDeEntrada::test_remetente_forjado_e_recusado FAILED [ 90%]
+tests/test_security.py::TestValidacaoDeEntrada::test_excesso_de_mensagens_e_recusado FAILED [ 93%]
+tests/test_security.py::TestValidacaoDeEntrada::test_chat_id_invalido_e_recusado FAILED [ 96%]
+tests/test_security.py::TestValidacaoDeEntrada::test_corpo_acima_do_limite_retorna_413 FAILED [100%]
+
+=================================== FAILURES ===================================
+E   assert 400 == 200
+     +  where 400 = <WrapperTestResponse streamed [400 BAD REQUEST]>.status_code
+backend/tests/test_security.py:43: assert 400 == 200
+E   assert 400 == 200
+     +  where 400 = <WrapperTestResponse streamed [400 BAD REQUEST]>.status_code
+backend/tests/test_security.py:75: assert 400 == 200
+E   assert True is False
+backend/tests/test_security.py:106: assert True is False
+E   assert 'EMAIL_EXISTS' not in '{"error":"E...EXISTS)."}\n'
+      
+      'EMAIL_EXISTS' is contained here:
+        {"error":"Error creating user: Error creating user: The user with the provided email already exists (EMAIL_EXISTS)."}
+      ?                                                                                                      ++++++++++++
+backend/tests/test_security.py:125: assert 'EMAIL_EXISTS' not in '{"error":"E...EXISTS)."}\n'
+E   AttributeError: 'NoneType' object has no attribute 'get'
+backend/endpoints.py:19: AttributeError: 'NoneType' object has no attribute 'get'
+E   assert 400 == 500
+     +  where 400 = <WrapperTestResponse streamed [400 BAD REQUEST]>.status_code
+backend/tests/test_security.py:136: assert 400 == 500
+E   assert 400 == 401
+     +  where 400 = <WrapperTestResponse streamed [400 BAD REQUEST]>.status_code
+backend/tests/test_security.py:142: assert 400 == 401
+E   assert False
+     +  where False = <WrapperTestResponse streamed [404 NOT FOUND]>.is_json
+backend/tests/test_security.py:148: assert False
+E   AssertionError: assert 200 == 401
+     +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code
+     +    where <WrapperTestResponse streamed [200 OK]> = get('/users/info?id_token=token-alice')
+     +      where get = <FlaskClient <Flask 'endpoints'>>.get
+backend/tests/test_security.py:157: AssertionError: assert 200 == 401
+E   assert 200 == 401
+     +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code
+backend/tests/test_security.py:161: assert 200 == 401
+E   AssertionError: assert 400 == 401
+     +  where 400 = <WrapperTestResponse streamed [400 BAD REQUEST]>.status_code
+     +    where <WrapperTestResponse streamed [400 BAD REQUEST]> = get('/chats')
+     +      where get = <FlaskClient <Flask 'endpoints'>>.get
+backend/tests/test_security.py:164: AssertionError: assert 400 == 401
+E   AssertionError: assert 404 == 200
+     +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+     +    where <WrapperTestResponse streamed [404 NOT FOUND]> = post('/auth/logout', headers={'Authorization': 'Bearer token-alice'})
+     +      where post = <FlaskClient <Flask 'endpoints'>>.post
+     +      and   {'Authorization': 'Bearer token-alice'} = auth('token-alice')
+backend/tests/test_security.py:168: AssertionError: assert 404 == 200
+E   AssertionError: assert [200, 200, 20...200, 200, ...] == [200, 200, 20...200, 429, ...]
+      
+      At index 5 diff: 200 != 429
+      
+      Full diff:
+        [
+            200,
+            200,...
+      
+      ...Full output truncated (12 lines hidden), use '-vv' to show
+backend/tests/test_security.py:187: AssertionError: assert [200, 200, 20...200, 200, ...] == [200, 200, 20...200, 429, ...]
+E   assert 200 == 429
+     +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code
+backend/tests/test_security.py:193: assert 200 == 429
+E   assert 0 == 2
+     +  where 0 = <built-in method count of list object at 0x7f6c5f9d2c40>(429)
+     +    where <built-in method count of list object at 0x7f6c5f9d2c40> = [200, 200, 200, 200, 200, 200, ...].count
+backend/tests/test_security.py:199: assert 0 == 2
+E   werkzeug.exceptions.BadRequestKeyError: 400 Bad Request: The browser (or proxy) sent a request that this server could not understand.
+/usr/local/lib/python3.13/site-packages/werkzeug/datastructures/headers.py:101: werkzeug.exceptions.BadRequestKeyError: 400 Bad Request: The browser (or proxy) sent a request that this server could not understand.
+E   AssertionError: assert 'Access-Control-Allow-Origin' not in Headers([('Content-Type', 'text/html; charset=utf-8'), ('Allow', 'OPTIONS, HEAD, GET'), ('Access-Control-Allow-Origin', 'https://atacante.example'), ('Access-Control-Allow-Methods', 'DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT'), ('Vary', 'Origin'), ('Content-Length', '0')])
+     +  where Headers([('Content-Type', 'text/html; charset=utf-8'), ('Allow', 'OPTIONS, HEAD, GET'), ('Access-Control-Allow-Origin', 'https://atacante.example'), ('Access-Control-Allow-Methods', 'DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT'), ('Vary', 'Origin'), ('Content-Length', '0')]) = <WrapperTestResponse streamed [200 OK]>.headers
+backend/tests/test_security.py:221: AssertionError: assert 'Access-Control-Allow-Origin' not in Headers([('Content-Type', 'text/html; charset=utf-8'), ('Allow', 'OPTIONS, HEAD, GET'), ('Access-Control-Allow-Origin', 'https://atacante.example'), ('Access-Control-Allow-Methods', 'DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT'), ('Vary', 'Origin'), ('Content-Length', '0')])
+E   KeyError: 'alice'
+backend/tests/test_security.py:250: KeyError: 'alice'
+E   assert 200 == 400
+     +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code
+backend/tests/test_security.py:256: assert 200 == 400
+E   assert 200 == 400
+     +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code
+backend/tests/test_security.py:262: assert 200 == 400
+E   assert 200 == 400
+     +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code
+backend/tests/test_security.py:266: assert 200 == 400
+E   assert 400 == 413
+     +  where 400 = <WrapperTestResponse streamed [400 BAD REQUEST]>.status_code
+backend/tests/test_security.py:272: assert 400 == 413
+=========================== short test summary info ============================
+FAILED tests/test_security.py::TestRegressao::test_salvar_e_carregar_perfil
+FAILED tests/test_security.py::TestControleDeAcesso::test_usuario_nao_le_perfil_de_outro
+FAILED tests/test_security.py::TestModoDebug::test_debug_desligado_por_padrao
+FAILED tests/test_security.py::TestMensagensDeErro::test_cadastro_nao_revela_email_existente
+FAILED tests/test_security.py::TestMensagensDeErro::test_corpo_nulo_nao_gera_erro_interno
+FAILED tests/test_security.py::TestMensagensDeErro::test_falha_interna_nao_vaza_detalhe
+FAILED tests/test_security.py::TestMensagensDeErro::test_token_invalido_nao_vaza_detalhe
+FAILED tests/test_security.py::TestMensagensDeErro::test_rota_inexistente_responde_json
+FAILED tests/test_security.py::TestTokenDeSessao::test_token_na_url_e_recusado
+FAILED tests/test_security.py::TestTokenDeSessao::test_token_no_corpo_e_recusado
+FAILED tests/test_security.py::TestTokenDeSessao::test_requisicao_sem_token_retorna_401
+FAILED tests/test_security.py::TestTokenDeSessao::test_logout_revoga_o_token
+FAILED tests/test_security.py::TestRateLimiting::test_cadastro_bloqueado_apos_5_tentativas_por_minuto
+FAILED tests/test_security.py::TestRateLimiting::test_resposta_429_informa_tempo_de_espera
+FAILED tests/test_security.py::TestRateLimiting::test_consulta_bloqueada_apos_20_por_minuto
+FAILED tests/test_security.py::TestHeadersECors::test_headers_de_seguranca_presentes
+FAILED tests/test_security.py::TestHeadersECors::test_cors_recusa_origem_desconhecida
+FAILED tests/test_security.py::TestValidacaoDeEntrada::test_campos_desconhecidos_sao_descartados
+FAILED tests/test_security.py::TestValidacaoDeEntrada::test_remetente_forjado_e_recusado
+FAILED tests/test_security.py::TestValidacaoDeEntrada::test_excesso_de_mensagens_e_recusado
+FAILED tests/test_security.py::TestValidacaoDeEntrada::test_chat_id_invalido_e_recusado
+FAILED tests/test_security.py::TestValidacaoDeEntrada::test_corpo_acima_do_limite_retorna_413
+======================== 22 failed, 11 passed in 0.11s =========================

@@ -1,0 +1,41 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+rootdir: backend
+plugins: platformdirs-4.13.0, anyio-4.15.1
+collecting ... collected 33 items
+
+tests/test_security.py::TestRegressao::test_salvar_e_carregar_perfil PASSED [  3%]
+tests/test_security.py::TestRegressao::test_salvar_listar_e_apagar_chat PASSED [  6%]
+tests/test_security.py::TestRegressao::test_consulta_anonima_e_autenticada PASSED [  9%]
+tests/test_security.py::TestRegressao::test_cadastro_valido PASSED       [ 12%]
+tests/test_security.py::TestControleDeAcesso::test_usuario_nao_le_perfil_de_outro PASSED [ 15%]
+tests/test_security.py::TestControleDeAcesso::test_usuario_nao_lista_chats_de_outro PASSED [ 18%]
+tests/test_security.py::TestControleDeAcesso::test_usuario_nao_apaga_chat_de_outro PASSED [ 21%]
+tests/test_security.py::TestModoDebug::test_debug_desligado_por_padrao PASSED [ 24%]
+tests/test_security.py::TestModoDebug::test_debug_so_liga_quando_pedido_explicitamente PASSED [ 27%]
+tests/test_security.py::TestModoDebug::test_console_do_werkzeug_indisponivel PASSED [ 30%]
+tests/test_security.py::TestMensagensDeErro::test_cadastro_nao_revela_email_existente PASSED [ 33%]
+tests/test_security.py::TestMensagensDeErro::test_corpo_nulo_nao_gera_erro_interno PASSED [ 36%]
+tests/test_security.py::TestMensagensDeErro::test_falha_interna_nao_vaza_detalhe PASSED [ 39%]
+tests/test_security.py::TestMensagensDeErro::test_token_invalido_nao_vaza_detalhe PASSED [ 42%]
+tests/test_security.py::TestMensagensDeErro::test_rota_inexistente_responde_json PASSED [ 45%]
+tests/test_security.py::TestTokenDeSessao::test_token_na_url_e_recusado PASSED [ 48%]
+tests/test_security.py::TestTokenDeSessao::test_token_no_corpo_e_recusado PASSED [ 51%]
+tests/test_security.py::TestTokenDeSessao::test_requisicao_sem_token_retorna_401 PASSED [ 54%]
+tests/test_security.py::TestTokenDeSessao::test_logout_revoga_o_token PASSED [ 57%]
+tests/test_security.py::TestTokenDeSessao::test_logout_nao_afeta_outro_usuario PASSED [ 60%]
+tests/test_security.py::TestRateLimiting::test_cadastro_bloqueado_apos_5_tentativas_por_minuto PASSED [ 63%]
+tests/test_security.py::TestRateLimiting::test_resposta_429_informa_tempo_de_espera PASSED [ 66%]
+tests/test_security.py::TestRateLimiting::test_consulta_bloqueada_apos_20_por_minuto PASSED [ 69%]
+tests/test_security.py::TestHeadersECors::test_headers_de_seguranca_presentes PASSED [ 72%]
+tests/test_security.py::TestHeadersECors::test_cors_recusa_origem_desconhecida PASSED [ 75%]
+tests/test_security.py::TestHeadersECors::test_cors_permite_o_frontend PASSED [ 78%]
+tests/test_security.py::TestValidacaoDeEntrada::test_ano_fora_da_lista_e_recusado PASSED [ 81%]
+tests/test_security.py::TestValidacaoDeEntrada::test_texto_muito_longo_e_recusado PASSED [ 84%]
+tests/test_security.py::TestValidacaoDeEntrada::test_campos_desconhecidos_sao_descartados PASSED [ 87%]
+tests/test_security.py::TestValidacaoDeEntrada::test_remetente_forjado_e_recusado PASSED [ 90%]
+tests/test_security.py::TestValidacaoDeEntrada::test_excesso_de_mensagens_e_recusado PASSED [ 93%]
+tests/test_security.py::TestValidacaoDeEntrada::test_chat_id_invalido_e_recusado PASSED [ 96%]
+tests/test_security.py::TestValidacaoDeEntrada::test_corpo_acima_do_limite_retorna_413 PASSED [100%]
+
+============================== 33 passed in 0.11s ==============================
