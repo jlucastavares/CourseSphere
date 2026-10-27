@@ -18,7 +18,25 @@ logging.basicConfig(
 logger = logging.getLogger("coursesphere")
 
 app = Flask(__name__)
-CORS(app)
+
+# CORS restrito: apenas as origens do frontend podem chamar a API pelo
+# navegador. A lista vem da variável CORS_ORIGINS (separada por vírgula);
+# o padrão cobre o Vite em desenvolvimento (5173) e o container (3000).
+DEFAULT_CORS_ORIGINS = (
+    "http://localhost:5173,http://127.0.0.1:5173,"
+    "http://localhost:3000,http://127.0.0.1:3000"
+)
+CORS_ORIGINS = [
+    o.strip() for o in os.environ.get("CORS_ORIGINS", DEFAULT_CORS_ORIGINS).split(",")
+    if o.strip()
+]
+CORS(
+    app,
+    origins=CORS_ORIGINS,
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+    max_age=600,
+)
 
 # Rate limiting por endereço IP. Limites padrão para todas as rotas e
 # limites mais rígidos nas rotas sensíveis (cadastro e consulta ao LLM).
@@ -35,6 +53,27 @@ limiter = Limiter(
 
 # TODO: figure out the blueprint thing below
 #app.register_blueprint(courses_bp)
+
+@app.after_request
+def set_security_headers(response):
+    """
+    Headers de segurança HTTP aplicados a todas as respostas da API.
+    """
+    # Impede o navegador de "adivinhar" o tipo do conteúdo (MIME sniffing).
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    # Impede que a resposta seja exibida dentro de um <iframe> (clickjacking).
+    response.headers["X-Frame-Options"] = "DENY"
+    # A API só devolve JSON: nenhum script, estilo ou frame é permitido.
+    response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+    # Não vaza a URL de origem para outros sites.
+    response.headers["Referrer-Policy"] = "no-referrer"
+    # Força HTTPS por 1 ano quando a API estiver atrás de TLS
+    # (navegadores ignoram este header em conexões HTTP).
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    # Respostas com dados do usuário não devem ficar em cache.
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
 
 success_response = lambda data, code: (jsonify(data), code)
 error_response = lambda error, code: (jsonify({'error': error}), code)
