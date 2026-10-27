@@ -173,6 +173,20 @@ def create_user():
         logger.exception("User creation failed")
         return error_response(SIGNUP_FAILED, 400)
 
+@app.route("/auth/logout", methods=["POST"])
+@require_auth
+def logout():
+    # Logout no servidor: revoga os tokens do usuário. Como o backend
+    # verifica tokens com check_revoked=True, um token copiado antes do
+    # logout deixa de funcionar imediatamente.
+    try:
+        Firebase.revoke_sessions(g.uid)
+        logger.info("Sessions revoked (uid=%s)", g.uid)
+        return success_response({"message": "Logged out"}, 200)
+    except Exception:
+        logger.exception("Failed to revoke sessions (uid=%s)", g.uid)
+        return error_response(GENERIC_SERVER_ERROR, 500)
+
 @app.route("/users/info", methods=["POST"])
 @require_auth
 def set_user_info():

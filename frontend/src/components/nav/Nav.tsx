@@ -16,6 +16,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { Auth, getAuth, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import firebaseConfig from '../../firebaseConfig';
+import { performLogout } from '../../api';
 
 const app: FirebaseApp = initializeApp(firebaseConfig);
 const auth: Auth = getAuth(app);
@@ -35,10 +36,7 @@ const NavLinks = ({ isLoggedIn }: { isLoggedIn: boolean }) => (
     {!isLoggedIn ? (
       <NavLink text="Login" path="/login" />
     ) : (
-      <Button variant="outlined" onClick={() => {
-        auth.signOut();
-        window.location.replace("/");
-      }}>
+      <Button variant="outlined" onClick={() => performLogout()}>
         Logout
       </Button>
     )}
@@ -75,7 +73,7 @@ export default function Nav() {
           <ListItemText primary="Login" />
         </ListItem>
       ) : (
-        <ListItem button onClick={() => { auth.signOut(); window.location.href = '/'; }}>
+        <ListItem button onClick={() => performLogout()}>
           <ListItemText primary="Logout" />
         </ListItem>
       )}

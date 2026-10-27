@@ -34,10 +34,21 @@ class Firebase:
     @staticmethod
     def verify_id_token(id_token: str):
         try:
-            decoded_token = auth.verify_id_token(id_token)
+            # check_revoked=True: tokens emitidos antes de um logout
+            # (revoke_sessions) ou de uma conta desativada são recusados,
+            # mesmo que ainda não tenham expirado.
+            decoded_token = auth.verify_id_token(id_token, check_revoked=True)
             return decoded_token
         except Exception as e:
             raise Exception(f"Error verifying ID token: {str(e)}")
+
+    @staticmethod
+    def revoke_sessions(uid: str):
+        """Invalida todos os tokens já emitidos para o usuário."""
+        try:
+            auth.revoke_refresh_tokens(uid)
+        except Exception as e:
+            raise Exception(f"Error revoking sessions: {str(e)}")
 
     @staticmethod
     def set_user_info(uid: str, user_info: dict):

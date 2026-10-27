@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import firebaseConfig from "./firebaseConfig";
 import { FirebaseApp, initializeApp } from "firebase/app";
-import { Auth, getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { Auth, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { toast } from "react-toastify";
 
 const app: FirebaseApp = initializeApp(firebaseConfig);
@@ -215,6 +215,28 @@ async function fetchCourseSphereResponse(query: string) {
   return response;
 }
 
+/**
+ * Logout completo: pede ao backend para revogar os tokens do usuário
+ * (assim um token copiado deixa de valer) e depois encerra a sessão local.
+ */
+async function performLogout() {
+  const user = auth.currentUser;
+  try {
+    if (user) {
+      const idToken = await user.getIdToken();
+      await fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${idToken}` }
+      });
+    }
+  } catch (e) {
+    console.error("Failed to revoke session on the server:", e);
+  } finally {
+    await signOut(auth);
+    window.location.replace("/");
+  }
+}
+
 function ensureUserLoggedIn(): boolean {
   const user = auth.currentUser;
   if (user == null) {
@@ -328,6 +350,7 @@ export {
   createUser,
   performSignup,
   performLogin,
+  performLogout,
   saveProfileChanges,
   setProfileInfoIfLoggedIn,
   fetchCourseSphereResponse,
