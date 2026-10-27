@@ -1,10 +1,19 @@
 import os
+import re
+import logging
 from functools import wraps
 from flask import Flask, request, jsonify, g
+from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
 from query_manager import QueryManager
 from firebase import Firebase
 from main import hashFunction
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+logger = logging.getLogger("coursesphere")
 
 app = Flask(__name__)
 CORS(app)
@@ -14,6 +23,33 @@ CORS(app)
 
 success_response = lambda data, code: (jsonify(data), code)
 error_response = lambda error, code: (jsonify({'error': error}), code)
+
+# Mensagens devolvidas ao cliente são sempre genéricas. O detalhe técnico
+# da exceção fica apenas no log do servidor (logger.exception), nunca na
+# resposta HTTP.
+GENERIC_SERVER_ERROR = "Internal server error"
+SIGNUP_FAILED = "Could not create account. Check your data or try logging in."
+EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+@app.errorhandler(HTTPException)
+def handle_http_exception(e):
+    # Erros HTTP conhecidos (404, 405, 415...) em JSON, sem página HTML.
+    return error_response(e.name, e.code)
+
+
+@app.errorhandler(Exception)
+def handle_unexpected_exception(e):
+    # Rede de segurança: qualquer exceção não tratada é registrada no log
+    # com traceback e o cliente recebe apenas uma mensagem genérica.
+    logger.exception("Unhandled exception on %s %s", request.method, request.path)
+    return error_response(GENERIC_SERVER_ERROR, 500)
+
+
+def get_json_body():
+    """Retorna o corpo JSON como dict, ou None se ausente/inválido."""
+    data = request.get_json(silent=True)
+    return data if isinstance(data, dict) else None
 
 
 def get_bearer_token():
@@ -50,22 +86,32 @@ def require_auth(view):
 
 @app.route("/users/create", methods=["POST"])
 def create_user():
-    data = request.get_json()
+    data = get_json_body()
+    if data is None:
+        return error_response("Invalid JSON body", 400)
     email = data.get("email")
     password = data.get("password")
-    if not email:
-        return error_response("Email is required", 400)
-    if not password:
-        return error_response("Password is required", 400)
+    # Validações feitas localmente: dão feedback útil ao usuário sem
+    # depender (nem expor) a mensagem de erro do Firebase.
+    if not isinstance(email, str) or not EMAIL_REGEX.match(email):
+        return error_response("A valid email is required", 400)
+    if not isinstance(password, str) or len(password) < 6:
+        return error_response("Password must have at least 6 characters", 400)
     try:
         return success_response(Firebase.create_user(email, password), 200)
-    except Exception as e:
-        return error_response(f"Error creating user: {str(e)}", 400)
+    except Exception:
+        # A mensagem do Firebase revelaria se o e-mail já está cadastrado
+        # (EMAIL_EXISTS), permitindo enumerar usuários. Resposta única para
+        # qualquer falha; o motivo real vai apenas para o log.
+        logger.exception("User creation failed")
+        return error_response(SIGNUP_FAILED, 400)
 
 @app.route("/users/info", methods=["POST"])
 @require_auth
 def set_user_info():
-    data = request.get_json()
+    data = get_json_body()
+    if data is None:
+        return error_response("Invalid JSON body", 400)
     try:
         uid = g.uid
         majors = data.get("majors")
@@ -84,8 +130,9 @@ def set_user_info():
         }
         Firebase.set_user_info(uid, user_info) 
         return success_response({"message": "User info set successfully", "uid": uid}, 200)
-    except Exception as e:
-        return error_response(f"Error with setting user info: {str(e)}", 400)
+    except Exception:
+        logger.exception("Failed to set user info (uid=%s)", g.uid)
+        return error_response("Could not save user info", 500)
         
 @app.route("/users/info", methods=["GET"])
 @require_auth
@@ -93,20 +140,24 @@ def get_user_info():
     try:
         user_info = Firebase.get_user_info(g.uid)
         return success_response(user_info, 200)
-    except Exception as e:
-        return error_response(f"Error getting user info: {str(e)}", 400)
+    except Exception:
+        logger.exception("Failed to get user info (uid=%s)", g.uid)
+        return error_response("Could not load user info", 500)
   
 @app.route("/users/query", methods=["POST"])
 def get_user_query():
     try:
-        body = request.get_json() or {}
+        body = get_json_body() or {}
         query = body.get("query")
+        if not isinstance(query, str) or not query.strip():
+            return error_response("Query is required", 400)
         # Autenticação opcional: se houver token, ele vem apenas do header.
         id_token = get_bearer_token()
         user_info = Firebase.try_get_user_info(id_token) if id_token else None
         return success_response(QueryManager(query, user_info).response, 200)
-    except Exception as e:
-        return error_response(f"Error getting generating query: {str(e)}", 400)
+    except Exception:
+        logger.exception("Failed to process query")
+        return error_response("Could not process query", 500)
 
 @app.route('/hash', methods=['POST'])
 @require_auth
@@ -114,9 +165,10 @@ def generate_message_id():
     try:
         data = request.get_json()  
         message_id = hashFunction(data)
-        return jsonify({'messageID': message_id}), 200  
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'messageID': message_id}), 200
+    except Exception:
+        logger.exception("Failed to generate message id")
+        return error_response(GENERIC_SERVER_ERROR, 500)
 
 @app.route("/chats", methods=["GET"])
 @require_auth
@@ -124,19 +176,26 @@ def list_chats():
     try:
         user_id = g.uid
         return success_response({"chats": Firebase.get_chats(user_id)}, 200)
-    except Exception as e:
-        return error_response(f"Error getting chats: {str(e)}", 400)
+    except Exception:
+        logger.exception("Failed to list chats (uid=%s)", g.uid)
+        return error_response("Could not load chats", 500)
 
 @app.route("/chats/<chat_id>/messages", methods=["POST"])
 @require_auth
 def save_chat(chat_id):
     try:
         user_id = g.uid
-        messages = request.get_json().get('messages', [])
+        data = get_json_body()
+        if data is None:
+            return error_response("Invalid JSON body", 400)
+        messages = data.get('messages', [])
+        if not isinstance(messages, list) or not all(isinstance(m, dict) for m in messages):
+            return error_response("'messages' must be a list of objects", 400)
         Firebase.save_chat(user_id, chat_id, messages)
         return jsonify({'message': 'Messages saved successfully'}), 200
-    except Exception as e:
-        return jsonify({'error': f"Error saving messages: {str(e)}"}), 400
+    except Exception:
+        logger.exception("Failed to save chat (uid=%s)", g.uid)
+        return error_response("Could not save messages", 500)
 
 @app.route("/chats/<chat_id>", methods=["DELETE"])
 @require_auth
@@ -145,8 +204,9 @@ def delete_chat(chat_id):
         user_id = g.uid
         Firebase.delete_chat(user_id, chat_id)
         return success_response({'message': 'Message deleted successfully'}, 200)
-    except Exception as e:
-        return error_response(f"Error deleting message: {str(e)}", 400)
+    except Exception:
+        logger.exception("Failed to delete chat (uid=%s)", g.uid)
+        return error_response("Could not delete chat", 500)
 
 
 if __name__ == '__main__':
