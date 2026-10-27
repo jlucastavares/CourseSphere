@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from query_manager import QueryManager
@@ -119,4 +120,10 @@ def delete_chat(chat_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # O modo debug do Flask ativa o Werkzeug Debugger (traceback + console
+    # Python no navegador). Ele nunca deve ficar fixo no código: só é ligado
+    # quando o desenvolvedor pede explicitamente com FLASK_DEBUG=1.
+    debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
+    host = os.environ.get("FLASK_RUN_HOST", "127.0.0.1")
+    port = int(os.environ.get("FLASK_RUN_PORT", "5000"))
+    app.run(host=host, port=port, debug=debug_mode)
