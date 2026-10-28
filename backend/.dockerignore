@@ -1,0 +1,24 @@
+# Segredos: nunca entram na imagem
+credentials.json
+config.json
+**/reddit_key.json
+.env
+*.pem
+
+# Ambiente local e arquivos gerados
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.idea/
+.DS_Store
+
+# Não necessários em produção
+tests/
+requirements-dev.txt
+cornell-course-sphere-data/
+blueprints/
+db.py
+Dockerfile
+.dockerignore

@@ -1,24 +1,18 @@
-# Use an official Node.js image as the base
-FROM node:20-alpine
-
-# Set the working directory inside the container
+# Etapa 1: gera a versão de produção do site (arquivos estáticos)
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
-RUN npm install -g serve
-
-# Copy the rest of the app's source code to the working directory
 COPY . .
-
-# Build the app
+# A API é acessada pelo mesmo endereço do site, através do Nginx (/api).
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-# Expose the port that the app will run on
-EXPOSE 3000
-
-# Define the command to run the app
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Etapa 2: Nginx sem privilégios de root servindo os arquivos gerados.
+# A imagem final não tem Node, código-fonte nem node_modules.
+FROM nginxinc/nginx-unprivileged:1.27-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 8080
