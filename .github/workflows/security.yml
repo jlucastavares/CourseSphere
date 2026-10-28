@@ -78,6 +78,25 @@ jobs:
           name: pip-audit-report
           path: backend/pip-audit-report.txt
 
+  frontend-build:
+    name: Build do frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Checagem de tipos (TypeScript) e build de produção
+        run: npm run build
+        env:
+          VITE_API_URL: /api
+
   sca-node:
     name: SCA - npm audit (frontend)
     runs-on: ubuntu-latest
