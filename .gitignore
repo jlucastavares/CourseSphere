@@ -1,4 +1,6 @@
-*config.json
+# Segredo do backend (chave da OpenAI). O padrão antigo "*config.json"
+# também ignorava o frontend/tsconfig.json, necessário para o build.
+config.json
 
 *.idea*
 *.vscode*
