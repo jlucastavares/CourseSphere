@@ -51,7 +51,7 @@ jobs:
         run: bandit -r . -x ./tests,./venv,./cornell-course-sphere-data -f txt -o bandit-report.txt || true
       - name: Falha se houver problema de severidade alta
         run: bandit -r . -x ./tests,./venv,./cornell-course-sphere-data --severity-level high
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: bandit-report
@@ -72,7 +72,7 @@ jobs:
       - name: Dependências Python com vulnerabilidades conhecidas
         run: pip-audit -r requirements.txt --progress-spinner off 2>&1 | tee pip-audit-report.txt
         shell: bash -o pipefail {0}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: pip-audit-report
@@ -95,7 +95,7 @@ jobs:
         continue-on-error: true
         run: npm audit --omit=dev --audit-level=high 2>&1 | tee npm-audit-report.txt
         shell: bash -o pipefail {0}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: npm-audit-report
