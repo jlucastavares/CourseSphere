@@ -1,5 +1,5 @@
 # Etapa 1: gera a versão de produção do site (arquivos estáticos)
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
