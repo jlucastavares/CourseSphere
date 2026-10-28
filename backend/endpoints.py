@@ -4,6 +4,7 @@ import logging
 from functools import wraps
 from flask import Flask, request, jsonify, g
 from werkzeug.exceptions import HTTPException
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -22,6 +23,13 @@ observability.configure_logging()
 logger = logging.getLogger("coursesphere")
 
 app = Flask(__name__)
+
+# Atrás do Nginx, o IP que chega ao Flask é o do proxy. Com TRUST_PROXY=1
+# o IP real do usuário é lido do header X-Forwarded-For (1 proxy confiável),
+# o que é essencial para o rate limiting e para os logs. Fica desligado por
+# padrão: sem proxy na frente, o header poderia ser forjado pelo cliente.
+if os.environ.get("TRUST_PROXY") == "1":
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 # Requisições com corpo maior que o limite são recusadas com 413.
 app.config["MAX_CONTENT_LENGTH"] = MAX_REQUEST_BYTES
 

@@ -7,7 +7,9 @@ import { toast } from "react-toastify";
 const app: FirebaseApp = initializeApp(firebaseConfig);
 const auth: Auth = getAuth(app);
 
-export const API_URL = "http://127.0.0.1:5000";
+// Endereço da API. No Docker o build usa VITE_API_URL=/api (mesma origem,
+// via Nginx). Sem a variável, usa o backend local de desenvolvimento.
+export const API_URL: string = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
 
 async function createUser (email: string, password: string) {

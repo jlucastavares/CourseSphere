@@ -3,8 +3,16 @@ import os
 import firebase_admin
 from firebase_admin import credentials, auth, db
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-firebase_credentials = credentials.Certificate(os.path.join(_BASE_DIR, "credentials.json"))
-database_url =  "https://desafio-tecnico-devops-default-rtdb.firebaseio.com"
+# Configuração vinda do ambiente: no Docker a credencial é montada como
+# secret em tempo de execução (/run/secrets/...) e não faz parte da imagem.
+# Sem a variável, mantém o comportamento local (arquivo na pasta backend).
+credentials_path = os.environ.get(
+    "FIREBASE_CREDENTIALS", os.path.join(_BASE_DIR, "credentials.json")
+)
+firebase_credentials = credentials.Certificate(credentials_path)
+database_url = os.environ.get(
+    "FIREBASE_DATABASE_URL", "https://desafio-tecnico-devops-default-rtdb.firebaseio.com"
+)
 firebase_admin.initialize_app(firebase_credentials, {"databaseURL": database_url})
 firebase_app = firebase_admin.get_app()
 

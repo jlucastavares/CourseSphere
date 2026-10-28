@@ -4,6 +4,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../../firebaseConfig";
+import { API_URL } from "../../api";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -20,7 +21,7 @@ export default function UserChats() {
           setIsLoggedIn(true);
           try {
             const idToken = await user.getIdToken();
-            const response = await fetch("http://127.0.0.1:5000/chats", {
+            const response = await fetch(`${API_URL}/chats`, {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",

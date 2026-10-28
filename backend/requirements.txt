@@ -6,3 +6,4 @@ pandas
 numpy
 flask-limiter
 prometheus-client
+redis
