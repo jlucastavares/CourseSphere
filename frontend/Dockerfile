@@ -13,6 +13,6 @@ RUN npm run build
 
 # Etapa 2: Nginx sem privilégios de root servindo os arquivos gerados.
 # A imagem final não tem Node, código-fonte nem node_modules.
-FROM nginxinc/nginx-unprivileged:1.27-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 8080
