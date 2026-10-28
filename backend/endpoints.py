@@ -249,7 +249,7 @@ def get_user_query():
 @require_auth
 def generate_message_id():
     try:
-        data = request.get_json()  
+        data = request.get_json(silent=True)
         message_id = hashFunction(data)
         return jsonify({'messageID': message_id}), 200
     except Exception:
